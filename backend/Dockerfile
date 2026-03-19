@@ -6,8 +6,8 @@ COPY backend/package*.json ./
 COPY backend/tsconfig*.json ./
 COPY backend/ ./
 # Install build tools needed for native modules on Alpine, then install deps and build
-RUN apk add --no-cache python3 make g++ \
-	&& npm ci \
+RUN apk add --no-cache python3 make g++ build-base \
+	&& if [ -f package-lock.json ]; then npm ci; else npm install; fi \
 	&& npm run build
 
 FROM node:18-alpine
