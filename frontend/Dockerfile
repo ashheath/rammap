@@ -3,8 +3,10 @@ WORKDIR /app
 
 COPY frontend/package*.json ./
 COPY frontend/ ./
-RUN npm ci
-RUN npm run build
+# Install build tools for native modules on Alpine, then install deps and build
+RUN apk add --no-cache python3 make g++ \
+	&& npm ci \
+	&& npm run build
 
 FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
