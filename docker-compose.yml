@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   caddy:
-    image: caddy:3
+    image: caddy:2
     ports:
       - "80:80"
       - "443:443"
