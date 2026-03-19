@@ -1,8 +1,7 @@
 {$HTTP_PORT := 80}
 {$HTTPS_PORT := 443}
 
-# Replace example.com with your domain
-example.com {
+rammap.uk {  # Configuration for your domain
   @api {
     path /api/*
   }
@@ -16,4 +15,9 @@ example.com {
   }
 
   encode gzip
+}
+
+www.rammap.uk {
+  redir https://rammap.uk{uri}
+}
 }
