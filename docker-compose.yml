@@ -23,9 +23,12 @@ services:
 
   caddy:
     image: caddy:2
+    # Changed host ports to avoid collision with existing proxy on 80/443.
+    # If you prefer Caddy not to publish any host ports (use existing proxy only),
+    # remove the `ports` section entirely.
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
