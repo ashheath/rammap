@@ -20,4 +20,3 @@ rammap.uk {  # Configuration for your domain
 www.rammap.uk {
   redir https://rammap.uk{uri}
 }
-}
