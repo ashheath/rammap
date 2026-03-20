@@ -10,3 +10,11 @@ services:
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
     plan: free
+
+databases:
+  - name: ram-locator-db
+    type: postgres
+    plan: free
+    # Render will provision a managed Postgres instance for this project.
+    # Note: if you require PostGIS, verify that the managed DB supports PostGIS
+    # or use an external provider that exposes the extension.

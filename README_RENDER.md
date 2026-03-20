@@ -17,6 +17,10 @@ Quick Render deployment
 4) Database schema:
    - If you use Render's managed Postgres, create the DB and run `backend/src/db/schema.sql` using `psql` or Render's SQL UI.
 
+   Database created by manifest
+   - If you use the `render.yaml` manifest and choose "Create services from a render.yaml", Render will also create the managed Postgres database defined in the manifest (`ram-locator-db`).
+   - Verify whether your app requires PostGIS: Render's managed Postgres may not enable PostGIS by default. If PostGIS is required, either enable the extension through Render's DB UI (if available) or use an external DB provider that offers PostGIS (for example, Supabase or a self-hosted Postgres with PostGIS).
+
 5) Notes & troubleshooting:
    - The backend is built from `backend/Dockerfile` (Docker environment on Render). The frontend is built using `npm ci && npm run build` inside `frontend/` and served as a static site from `frontend/dist`.
    - If you require PostGIS, Render's managed Postgres may not provide PostGIS by default — consider using a provider that exposes PostGIS or a managed DB that supports extensions.
