@@ -1,0 +1,12 @@
+services:
+  - type: web_service
+    name: ram-locator-backend
+    env: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+
+  - type: static_site
+    name: ram-locator-frontend
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    plan: free
