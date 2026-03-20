@@ -8,10 +8,17 @@ dotenv.config()
 const app = express()
 const port = process.env.PORT || 3000
 
-// Middleware
+// Middleware: CORS
+const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'http://localhost:5173'
+const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean)
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g., mobile apps, curl)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error('CORS blocked'))
+  },
+  credentials: true,
 }))
 app.use(express.json())
 app.use(express.urlencoded({ limit: '10mb', extended: true }))
@@ -35,5 +42,5 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`)
-  console.log(`📍 CORS enabled for: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`)
+  console.log(`📍 CORS allowed origins: ${allowedOrigins.join(', ')}`)
 })
