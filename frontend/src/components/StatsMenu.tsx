@@ -86,6 +86,7 @@ const StatsMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const palette = ['#111827', '#ef4444', '#10b981', '#f59e0b', '#64748b', '#a78bfa', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#60a5fa']
   const colorPaletteByLabel: Record<string, string> = {
     black: '#111827',
+    white: '#ffffff',
     red: '#ef4444',
     green: '#22c55e',
     yellow: '#facc15',

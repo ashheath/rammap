@@ -93,7 +93,7 @@ export const validateVehicleInput = (req, res, next) => {
         errors.push('Invalid grid cell format');
     }
     // Optional color validation
-    const allowedColors = ['Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other'];
+    const allowedColors = ['Black', 'White', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other'];
     if (req.body.color && !allowedColors.includes(req.body.color)) {
         errors.push('Invalid color option');
     }

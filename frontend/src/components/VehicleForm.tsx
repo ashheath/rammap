@@ -207,7 +207,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
           className="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           disabled={loading}
         >
-          {['Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other'].map((c) => (
+          {['Black', 'White', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other'].map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
