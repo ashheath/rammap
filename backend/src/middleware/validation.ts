@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 const MILES_TO_METERS = 1609.344
 const PRIVACY_CELL_AREA_SQ_MI = 20
 const BASE_CELL_SIZE_METERS = MILES_TO_METERS * Math.sqrt(PRIVACY_CELL_AREA_SQ_MI)
+const WEB_MERCATOR_RADIUS = 6378137
 const UK_IRELAND_BOUNDS = {
   minLat: 49.5,
   maxLat: 59.5,
@@ -29,8 +30,10 @@ const parseGridCellCenter = (gridCell: string): { lat: number; lng: number } | n
       return { lat: x / 10 + 0.05, lng: y / 10 + 0.05 }
     }
 
-    const lng = ((x + 0.5) * BASE_CELL_SIZE_METERS) / 111320
-    const lat = ((y + 0.5) * BASE_CELL_SIZE_METERS) / 110540
+    const projectedX = (x + 0.5) * BASE_CELL_SIZE_METERS
+    const projectedY = (y + 0.5) * BASE_CELL_SIZE_METERS
+    const lng = (projectedX / WEB_MERCATOR_RADIUS) * (180 / Math.PI)
+    const lat = (2 * Math.atan(Math.exp(projectedY / WEB_MERCATOR_RADIUS)) - Math.PI / 2) * (180 / Math.PI)
     return { lat, lng }
   }
 
