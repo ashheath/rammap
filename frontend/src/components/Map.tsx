@@ -11,6 +11,8 @@ interface Vehicle {
   uses?: string[]
   vrm?: string
   color?: string
+  trim?: string
+  generation?: string
 }
 
 interface MapProps {
@@ -41,6 +43,22 @@ const parseCellKey = (cellKey: string) => {
   const y = Number(parts[1])
   if (Number.isNaN(x) || Number.isNaN(y)) return null
   return { x, y }
+}
+
+const formatCompactLabel = (v: Vehicle) => {
+  const model = (v.model || '').replace(/^Ram\s+/i, '').trim()
+  const trim = v.trim ? v.trim.trim() : ''
+  const generation = v.generation ? v.generation.trim() : ''
+  let parts: string[] = []
+  if (model) parts.push(model)
+  if (trim) parts.push(trim)
+  // generation usually follows the trim, e.g. "Rebel 5th Gen"
+  if (generation && parts.length > 0) {
+    parts[parts.length - 1] = `${parts[parts.length - 1]} ${generation}`
+  } else if (generation) {
+    parts.push(generation)
+  }
+  return parts.join(', ')
 }
 
 const getCellBounds = (cellKey: string, crs: L.CRS): L.LatLngBounds | null => {
@@ -288,10 +306,23 @@ const LeafletMap: React.FC<MapProps> = ({
           popupAnchor: [0, -iconSize / 2],
         })
         marker.setIcon(coloredIcon)
+
+        const compact = formatCompactLabel(vehicle) || vehicle.model
+        // show a small compact tooltip (trim & generation, model without "Ram")
+        try {
+          marker.bindTooltip(compact, { direction: 'top', offset: [0, -iconSize / 2], className: 'vehicle-compact-tooltip' })
+        } catch (err) {
+          // ignore tooltip failures on very old leaflet builds
+        }
+
         const usesText = (vehicle.uses || []).map((u) => u).join(', ')
         const desc = vehicle.description ? `<div style="margin-top:6px;color:#666">${vehicle.description}</div>` : ''
+        const vrmHtml = vehicle.vrm ? `<div style="margin-top:6px;font-size:12px;color:#666">VRM: ${vehicle.vrm}</div>` : ''
+        const colorText = vehicle.color ? vehicle.color : 'N/A'
+
+        // Detailed popup when selected: compact label, year, color, uses, description, VRM
         marker.bindPopup(
-          `<div style="font-size:13px;"><strong>${vehicle.year} ${vehicle.model}</strong>${desc}<div style="margin-top:6px;font-size:12px;color:#888">Uses: ${usesText || 'N/A'}</div></div>`
+          `<div style="font-size:13px;max-width:260px;color:#111"><strong>${compact}</strong><div style="margin-top:6px;font-size:12px;color:#444">Year: ${vehicle.year} • Color: ${colorText}</div>${desc}<div style="margin-top:6px;font-size:12px;color:#888">Uses: ${usesText || 'N/A'}</div>${vrmHtml}</div>`
         )
         marker.on('click', () => onVehicleSelectedRef.current(vehicle))
         marker.on('popupclose', () => onVehicleSelectedRef.current(null))
@@ -323,7 +354,8 @@ const LeafletMap: React.FC<MapProps> = ({
           .map((v) => {
             const usesText = (v.uses || []).join(', ')
             const desc = v.description ? ` — ${v.description}` : ''
-            return `<div style="margin-bottom:4px;font-size:12px;color:#ddd">${v.year} ${v.model}${desc}<div style="color:#aaa;font-size:11px">Uses: ${usesText || 'N/A'}</div></div>`
+            const compactV = formatCompactLabel(v) || v.model
+            return `<div style="margin-bottom:4px;font-size:12px;color:#ddd">${compactV} — ${v.year}${desc}<div style="color:#aaa;font-size:11px">Uses: ${usesText || 'N/A'}</div></div>`
           })
           .join('')
 
