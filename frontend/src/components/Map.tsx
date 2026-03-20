@@ -17,13 +17,14 @@ interface MapProps {
   selectedCell: string | null
   vehicles: Vehicle[]
   onCellSelected: (cellCode: string) => void
-  onVehicleSelected: (vehicle: Vehicle) => void
+  onVehicleSelected: (vehicle: Vehicle | null) => void
   onVisibleVehiclesChange: (vehicles: Vehicle[]) => void
 }
 
 const MILES_TO_METERS = 1609.344
 const PRIVACY_CELL_AREA_SQ_MI = 20 // increased to 4× the previous (5 sq mi) for stronger privacy
 const BASE_CELL_SIZE_METERS = MILES_TO_METERS * Math.sqrt(PRIVACY_CELL_AREA_SQ_MI)
+const UK_IRELAND_BOUNDS = L.latLngBounds([49.5, -10.8], [59.5, 2.5])
 
 const getRenderFactorForZoom = (zoom: number) => {
   if (zoom < 6) return 16
@@ -293,6 +294,7 @@ const LeafletMap: React.FC<MapProps> = ({
           `<div style="font-size:13px;"><strong>${vehicle.year} ${vehicle.model}</strong>${desc}<div style="margin-top:6px;font-size:12px;color:#888">Uses: ${usesText || 'N/A'}</div></div>`
         )
         marker.on('click', () => onVehicleSelectedRef.current(vehicle))
+        marker.on('popupclose', () => onVehicleSelectedRef.current(null))
         } else {
           // multi-vehicle marker: use generic black icon
           const imgPath = pickupImgPathFor(null)
@@ -328,6 +330,7 @@ const LeafletMap: React.FC<MapProps> = ({
         marker.bindPopup(
           `<div style="font-size:13px;"><strong>${count} vehicles</strong><br/>${listHtml}</div>`
         )
+        marker.on('popupclose', () => onVehicleSelectedRef.current(null))
         // clicking a multi-vehicle marker will only open the popup (no cell selection)
       }
 
@@ -349,7 +352,15 @@ const LeafletMap: React.FC<MapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || map.current) return
 
-    map.current = L.map(mapContainer.current).setView([54.5, -3.5], 6)
+    const isMobileView = window.matchMedia('(max-width: 767px)').matches
+    const initialCenter: [number, number] = isMobileView ? [53.8008, -1.5491] : [54.5, -3.5]
+    const initialZoom = isMobileView ? 6 : 6
+
+    map.current = L.map(mapContainer.current, {
+      maxBounds: UK_IRELAND_BOUNDS,
+      maxBoundsViscosity: 1,
+      minZoom: 5,
+    }).setView(initialCenter, initialZoom)
 
     map.current.createPane('gridPane')
     map.current.getPane('gridPane')!.style.zIndex = '350'
@@ -368,6 +379,7 @@ const LeafletMap: React.FC<MapProps> = ({
     // Ensure clicks anywhere on the map select the underlying base privacy cell.
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       try {
+        if (!UK_IRELAND_BOUNDS.contains(e.latlng)) return
         const mapCrs = map.current?.options.crs
         if (!mapCrs) return
         const p = mapCrs.project(e.latlng)

@@ -1,5 +1,42 @@
 import { Request, Response, NextFunction } from 'express'
 
+const MILES_TO_METERS = 1609.344
+const PRIVACY_CELL_AREA_SQ_MI = 20
+const BASE_CELL_SIZE_METERS = MILES_TO_METERS * Math.sqrt(PRIVACY_CELL_AREA_SQ_MI)
+const UK_IRELAND_BOUNDS = {
+  minLat: 49.5,
+  maxLat: 59.5,
+  minLng: -10.8,
+  maxLng: 2.5,
+}
+
+const isWithinUkIreland = (lat: number, lng: number): boolean => {
+  return lat >= UK_IRELAND_BOUNDS.minLat &&
+    lat <= UK_IRELAND_BOUNDS.maxLat &&
+    lng >= UK_IRELAND_BOUNDS.minLng &&
+    lng <= UK_IRELAND_BOUNDS.maxLng
+}
+
+const parseGridCellCenter = (gridCell: string): { lat: number; lng: number } | null => {
+  const parts = gridCell.split('_')
+  if (parts.length === 2) {
+    const x = Number(parts[0])
+    const y = Number(parts[1])
+    if (Number.isNaN(x) || Number.isNaN(y)) return null
+
+    // Legacy lat/lng-style cells.
+    if (Math.abs(x) <= 200 && Math.abs(y) <= 200) {
+      return { lat: x / 10 + 0.05, lng: y / 10 + 0.05 }
+    }
+
+    const lng = ((x + 0.5) * BASE_CELL_SIZE_METERS) / 111320
+    const lat = ((y + 0.5) * BASE_CELL_SIZE_METERS) / 110540
+    return { lat, lng }
+  }
+
+  return null
+}
+
 /**
  * Validate UK vehicle registration plate (VRM) format
  * UK format: 1-2 letters + 50-99 or 99-19 + 1-3 letters
@@ -38,7 +75,12 @@ export const validateModel = (model: string): boolean => {
  * Validate grid cell format (e.g., "TL123456" or simplified)
  */
 export const validateGridCell = (gridCell: string): boolean => {
-  return (gridCell && gridCell.length >= 2 && gridCell.length <= 20) || false
+  if (!gridCell || gridCell.length < 2 || gridCell.length > 20) return false
+
+  const center = parseGridCellCenter(gridCell)
+  if (!center) return false
+
+  return isWithinUkIreland(center.lat, center.lng)
 }
 
 /**
