@@ -49,6 +49,25 @@ function App() {
     setVisibleVehicles(vehicles)
   }
 
+  const ordinalSuffix = (n: number) => {
+    const s = ["th", "st", "nd", "rd"]
+    const v = n % 100
+    return (s[(v - 20) % 10] || s[v] || s[0])
+  }
+
+  const formatShortLabel = (v: Vehicle) => {
+    const modelCore = (v.model || '').replace(/^Ram\s+/i, '').trim()
+    const size = modelCore.split(' ')[0] || modelCore
+    const trim = (v.trim || '').trim()
+    const genNum = v.generation ? Number(v.generation) : undefined
+    const gen = genNum ? `${genNum}${ordinalSuffix(genNum)} Gen` : ''
+    const parts: string[] = []
+    if (size) parts.push(size)
+    if (trim) parts.push(trim)
+    if (gen) parts.push(gen)
+    return parts.join(', ')
+  }
+
   return (
     <div className="app-container h-screen flex flex-col md:flex-row bg-white text-gray-900">
       {/* Header */}
@@ -183,10 +202,7 @@ function App() {
                     onClick={() => handleVehicleSelect(vehicle)}
                     className="w-full text-left border border-gray-700 rounded p-3 hover:shadow-md transition bg-gray-900"
                   >
-                    <p className="font-semibold text-gray-100">{vehicle.model}</p>
-                    <p className="text-sm text-gray-400">
-                      {vehicle.year}
-                    </p>
+                    <p className="font-semibold text-gray-100">{formatShortLabel(vehicle)}</p>
                   </button>
                 ))}
               </div>
