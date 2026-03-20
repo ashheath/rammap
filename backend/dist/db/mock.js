@@ -1,112 +1,104 @@
-/**
- * Mock In-Memory Database
- * Stores vehicles in RAM (resets on server restart)
- * Perfect for development and testing
- */
-// In-memory storage
-const vehicles = new Map();
+import { Pool } from 'pg';
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: false }
+        : undefined,
+});
+const mapVehicle = (row) => ({
+    id: row.id,
+    vrm: row.vrm,
+    year: row.year,
+    model: row.model,
+    os_grid_cell: row.os_grid_cell,
+    description: row.description || '',
+    uses: Array.isArray(row.uses) ? row.uses : [],
+    color: row.color || 'Black',
+    trim: row.trim || '',
+    generation: row.generation || 1,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+});
 /**
  * Get all vehicles or filter by grid cell
  */
-export const getVehicles = (gridCell) => {
-    const allVehicles = Array.from(vehicles.values());
-    const mapEnsure = (v) => ({
-        ...v,
-        description: v.description || '',
-        uses: v.uses || [],
-        color: v.color || 'Black',
-        trim: v.trim || '',
-        generation: v.generation || 1
-    });
-    if (gridCell) {
-        return allVehicles.filter((v) => v.os_grid_cell === gridCell).map(mapEnsure);
-    }
-    return allVehicles.map(mapEnsure);
+export const getVehicles = async (gridCell) => {
+    const query = gridCell
+        ? {
+            text: `SELECT * FROM vehicles WHERE os_grid_cell = $1 ORDER BY created_at DESC`,
+            values: [gridCell],
+        }
+        : {
+            text: `SELECT * FROM vehicles ORDER BY created_at DESC`,
+            values: [],
+        };
+    const result = await pool.query(query);
+    return result.rows.map(mapVehicle);
 };
 /**
  * Get vehicle by VRM
  */
-export const getVehicleByVRM = (vrm) => {
-    const v = vehicles.get(vrm.toUpperCase());
-    if (!v)
+export const getVehicleByVRM = async (vrm) => {
+    const result = await pool.query(`SELECT * FROM vehicles WHERE vrm = $1 LIMIT 1`, [vrm.toUpperCase()]);
+    if (result.rowCount === 0)
         return undefined;
-    return {
-        ...v,
-        description: v.description || '',
-        uses: v.uses || [],
-        color: v.color || 'Black',
-        trim: v.trim || '',
-        generation: v.generation || 1
-    };
+    return mapVehicle(result.rows[0]);
 };
 /**
  * Create or update vehicle
  */
-export const saveVehicle = (vehicle) => {
+export const saveVehicle = async (vehicle) => {
     const normalizedVRM = vehicle.vrm.toUpperCase();
-    const now = new Date().toISOString();
-    console.log('saveVehicle payload:', JSON.stringify(vehicle));
-    if (vehicles.has(normalizedVRM)) {
-        // Update existing
-        const existing = vehicles.get(normalizedVRM);
-        const updated = {
-            ...existing,
-            ...vehicle,
-            vrm: normalizedVRM,
-            updated_at: now
-        };
-        vehicles.set(normalizedVRM, updated);
-        console.log(`✓ Updated vehicle: ${normalizedVRM}`);
-        return updated;
-    }
-    else {
-        // Create new
-        const newVehicle = {
-            id: Math.random().toString(36).substring(7),
-            vrm: normalizedVRM,
-            year: vehicle.year,
-            model: vehicle.model,
-            os_grid_cell: vehicle.os_grid_cell,
-            description: vehicle.description || '',
-            uses: vehicle.uses || [],
-            color: vehicle.color || 'Black',
-            trim: vehicle.trim || '',
-            generation: vehicle.generation || 1,
-            created_at: now,
-            updated_at: now
-        };
-        vehicles.set(normalizedVRM, newVehicle);
-        console.log(`✓ Created vehicle: ${normalizedVRM}`);
-        return newVehicle;
-    }
+    const result = await pool.query(`
+      INSERT INTO vehicles (
+        vrm, year, model, os_grid_cell, description, uses, color, trim, generation
+      ) VALUES ($1, $2, $3, $4, $5, $6::text[], $7, $8, $9)
+      ON CONFLICT (vrm)
+      DO UPDATE SET
+        year = EXCLUDED.year,
+        model = EXCLUDED.model,
+        os_grid_cell = EXCLUDED.os_grid_cell,
+        description = EXCLUDED.description,
+        uses = EXCLUDED.uses,
+        color = EXCLUDED.color,
+        trim = EXCLUDED.trim,
+        generation = EXCLUDED.generation,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `, [
+        normalizedVRM,
+        vehicle.year,
+        vehicle.model,
+        vehicle.os_grid_cell,
+        vehicle.description || '',
+        vehicle.uses || [],
+        vehicle.color || 'Black',
+        vehicle.trim || '',
+        vehicle.generation || 1,
+    ]);
+    return mapVehicle(result.rows[0]);
 };
 /**
  * Delete vehicle (soft delete)
  */
-export const deleteVehicle = (vrm) => {
-    const normalizedVRM = vrm.toUpperCase();
-    if (vehicles.has(normalizedVRM)) {
-        vehicles.delete(normalizedVRM);
-        console.log(`✓ Deleted vehicle: ${normalizedVRM}`);
-        return true;
-    }
-    return false;
+export const deleteVehicle = async (vrm) => {
+    const result = await pool.query(`DELETE FROM vehicles WHERE vrm = $1`, [vrm.toUpperCase()]);
+    return (result.rowCount || 0) > 0;
 };
-// Photo storage removed for privacy; no photo records are kept in the mock DB
 /**
  * Clear all data (for testing)
  */
-export const clearAllData = () => {
-    vehicles.clear();
-    // photos cleared implicitly since photo support removed
-    console.log('✓ All data cleared');
+export const clearAllData = async () => {
+    await pool.query(`TRUNCATE TABLE vehicles RESTART IDENTITY CASCADE`);
 };
 /**
  * Get database stats
  */
-export const getStats = () => {
+export const getStats = async () => {
+    const vehicleResult = await pool.query(`SELECT COUNT(*)::int AS count FROM vehicles`);
+    const gridResult = await pool.query(`SELECT COUNT(DISTINCT os_grid_cell)::int AS count FROM vehicles`);
     return {
-        vehicleCount: vehicles.size,
-        gridCells: Array.from(new Set(Array.from(vehicles.values()).map((v) => v.os_grid_cell))).length
+        vehicleCount: vehicleResult.rows[0]?.count || 0,
+        gridCells: gridResult.rows[0]?.count || 0,
     };
 };

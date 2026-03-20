@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
         const { grid_cell, vrm } = req.query;
         if (vrm) {
             // Search by VRM
-            const vehicle = db.getVehicleByVRM(vrm);
+            const vehicle = await db.getVehicleByVRM(vrm);
             if (vehicle) {
                 return res.json({
                     success: true,
@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
             });
         }
         // Return vehicles in grid cell
-        const vehicles = db.getVehicles(grid_cell || undefined);
+        const vehicles = await db.getVehicles(grid_cell || undefined);
         res.json({
             success: true,
             data: vehicles
@@ -53,7 +53,7 @@ router.get('/:vrm', async (req, res) => {
     try {
         const { vrm } = req.params;
         const normalizedVRM = normalizeVRM(vrm);
-        const vehicle = db.getVehicleByVRM(normalizedVRM);
+        const vehicle = await db.getVehicleByVRM(normalizedVRM);
         // Return 200 with null data when not found to avoid browser-level 404
         // entries in the Network console when the app checks for an existing VRM.
         if (!vehicle) {
@@ -77,7 +77,7 @@ router.get('/:vrm', async (req, res) => {
 router.post('/', createVehicleLimiter, validateVehicleInput, async (req, res) => {
     try {
         const { vrm, year, model, os_grid_cell, description, uses, color, trim, generation } = req.body;
-        const vehicle = db.saveVehicle({
+        const vehicle = await db.saveVehicle({
             vrm,
             year,
             model,
@@ -105,14 +105,14 @@ router.patch('/:vrm', validateVehicleInput, async (req, res) => {
         const { vrm } = req.params;
         const { year, model, os_grid_cell } = req.body;
         const normalizedVRM = normalizeVRM(vrm);
-        const existing = db.getVehicleByVRM(normalizedVRM);
+        const existing = await db.getVehicleByVRM(normalizedVRM);
         if (!existing) {
             return res.status(404).json({
                 success: false,
                 error: `Vehicle ${normalizedVRM} not found`
             });
         }
-        const updated = db.saveVehicle({
+        const updated = await db.saveVehicle({
             vrm: normalizedVRM,
             year: year || existing.year,
             model: model || existing.model,
@@ -139,7 +139,7 @@ router.delete('/:vrm', async (req, res) => {
     try {
         const { vrm } = req.params;
         const normalizedVRM = normalizeVRM(vrm);
-        const deleted = db.deleteVehicle(normalizedVRM);
+        const deleted = await db.deleteVehicle(normalizedVRM);
         if (!deleted) {
             return res.status(404).json({
                 success: false,
@@ -159,14 +159,14 @@ router.delete('/:vrm', async (req, res) => {
 /**
  * GET /api/stats - Get database statistics
  */
-router.get('/debug/stats', (req, res) => {
+router.get('/debug/stats', async (req, res) => {
     try {
-        const stats = db.getStats();
+        const stats = await db.getStats();
         res.json({
             success: true,
             data: {
                 ...stats,
-                message: 'Using in-memory mock database (data resets on server restart)',
+                message: 'Using PostgreSQL database',
                 timestamp: new Date().toISOString()
             }
         });
@@ -178,10 +178,10 @@ router.get('/debug/stats', (req, res) => {
 /**
  * POST /api/vehicles/debug/clear - Clear all in-memory test data (development only)
  */
-router.post('/debug/clear', (req, res) => {
+router.post('/debug/clear', async (req, res) => {
     try {
-        db.clearAllData();
-        res.json({ success: true, message: 'In-memory database cleared' });
+        await db.clearAllData();
+        res.json({ success: true, message: 'Database cleared' });
     }
     catch (error) {
         res.status(500).json({ success: false, error: error.message });

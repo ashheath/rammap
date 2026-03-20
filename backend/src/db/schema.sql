@@ -38,15 +38,15 @@ CREATE TABLE IF NOT EXISTS submission_logs (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_vehicles_os_grid_cell ON vehicles(os_grid_cell);
-CREATE INDEX idx_vehicles_created_at ON vehicles(created_at);
-CREATE INDEX idx_vehicles_vrm ON vehicles(vrm);
-CREATE INDEX idx_vehicles_color ON vehicles(color);
-CREATE INDEX idx_vehicles_model ON vehicles(model);
+CREATE INDEX IF NOT EXISTS idx_vehicles_os_grid_cell ON vehicles(os_grid_cell);
+CREATE INDEX IF NOT EXISTS idx_vehicles_created_at ON vehicles(created_at);
+CREATE INDEX IF NOT EXISTS idx_vehicles_vrm ON vehicles(vrm);
+CREATE INDEX IF NOT EXISTS idx_vehicles_color ON vehicles(color);
+CREATE INDEX IF NOT EXISTS idx_vehicles_model ON vehicles(model);
 
 -- Create indexes for submission_logs
-CREATE INDEX idx_ip_created ON submission_logs (ip_address, created_at);
-CREATE INDEX idx_vrm_created ON submission_logs (vrm, created_at);
+CREATE INDEX IF NOT EXISTS idx_ip_created ON submission_logs (ip_address, created_at);
+CREATE INDEX IF NOT EXISTS idx_vrm_created ON submission_logs (vrm, created_at);
 
 -- Trigger function to update `updated_at` on row updates
 CREATE OR REPLACE FUNCTION set_updated_at()

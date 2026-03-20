@@ -8,12 +8,30 @@ const port = process.env.PORT || 3000;
 // Middleware: CORS
 const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'http://localhost:5173';
 const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+const isAllowedOrigin = (origin) => {
+    if (allowedOrigins.includes(origin))
+        return true;
+    try {
+        const url = new URL(origin);
+        const hostname = url.hostname.toLowerCase();
+        if (hostname === 'rammap.uk' || hostname === 'www.rammap.uk' || hostname.endsWith('.rammap.uk')) {
+            return true;
+        }
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return true;
+        }
+    }
+    catch {
+        return false;
+    }
+    return false;
+};
 app.use(cors({
     origin: (origin, callback) => {
         // allow requests with no origin (e.g., mobile apps, curl)
         if (!origin)
             return callback(null, true);
-        if (allowedOrigins.includes(origin))
+        if (isAllowedOrigin(origin))
             return callback(null, true);
         return callback(new Error('CORS blocked'));
     },
