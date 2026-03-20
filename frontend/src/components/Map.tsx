@@ -37,7 +37,7 @@ const parseCellKey = (cellKey: string) => {
 const formatCompactLabel = (v: Vehicle) => {
   const model = (v.model || '').replace(/^Ram\s+/i, '').trim()
   const trim = v.trim ? v.trim.trim() : ''
-  const generation = v.generation ? v.generation.trim() : ''
+  const generation = v.generation ? String(v.generation) : ''
   let parts: string[] = []
   if (model) parts.push(model)
   if (trim) parts.push(trim)
