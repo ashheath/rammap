@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS os_grid_cells (
   bounds GEOMETRY(POLYGON, 4326),
   vehicle_count INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create Vehicles table
@@ -22,10 +22,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
   os_grid_cell VARCHAR(20) NOT NULL REFERENCES os_grid_cells(cell_code),
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_vrm (vrm),
-  INDEX idx_grid_cell (os_grid_cell),
-  INDEX idx_created_at (created_at)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create Submission Logs (for rate limiting and audit)
@@ -36,8 +33,7 @@ CREATE TABLE IF NOT EXISTS submission_logs (
   action VARCHAR(50),
   success BOOLEAN,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_ip_created (ip_address, created_at),
-  INDEX idx_vrm_created (vrm, created_at)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create indexes for performance
@@ -45,6 +41,35 @@ CREATE INDEX idx_vehicles_os_grid_cell ON vehicles(os_grid_cell);
 CREATE INDEX idx_vehicles_created_at ON vehicles(created_at);
 CREATE INDEX idx_vehicles_vrm ON vehicles(vrm);
 CREATE INDEX idx_os_grid_vehicle_count ON os_grid_cells(vehicle_count);
+
+-- Create indexes for submission_logs
+CREATE INDEX idx_ip_created ON submission_logs (ip_address, created_at);
+CREATE INDEX idx_vrm_created ON submission_logs (vrm, created_at);
+
+-- Trigger function to update `updated_at` on row updates
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger to tables that have `updated_at`
+CREATE TRIGGER set_updated_at_os_grid_cells
+BEFORE UPDATE ON os_grid_cells
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER set_updated_at_vehicles
+BEFORE UPDATE ON vehicles
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER set_updated_at_submission_logs
+BEFORE UPDATE ON submission_logs
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 
 -- Create function to update vehicle counter
 CREATE OR REPLACE FUNCTION update_grid_cell_vehicle_count()
