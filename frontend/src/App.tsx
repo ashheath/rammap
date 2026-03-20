@@ -5,18 +5,7 @@ import VehicleForm from './components/VehicleForm'
 import StatsMenu from './components/StatsMenu'
 import axios from 'axios'
 
-interface Vehicle {
-  id: string
-  vrm?: string
-  year: number
-  model: string
-  os_grid_cell: string
-  trim?: string
-  generation?: number
-  description?: string
-  uses?: string[]
-  color?: string
-}
+import { Vehicle } from './types';
 
 function App() {
   const [selectedCell, setSelectedCell] = useState<string | null>(null)

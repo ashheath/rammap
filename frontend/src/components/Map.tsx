@@ -2,18 +2,7 @@ import { useEffect, useRef } from 'react'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-interface Vehicle {
-  id: string
-  year: number
-  model: string
-  os_grid_cell: string
-  description?: string
-  uses?: string[]
-  vrm?: string
-  color?: string
-  trim?: string
-  generation?: string
-}
+import { Vehicle } from '../types';
 
 interface MapProps {
   selectedCell: string | null

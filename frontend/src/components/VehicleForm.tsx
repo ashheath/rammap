@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import axios from 'axios'
+import { Vehicle } from '../types';
 
 interface VehicleFormProps {
   gridCell: string | null

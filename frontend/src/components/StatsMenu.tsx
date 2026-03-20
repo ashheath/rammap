@@ -1,17 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-interface Vehicle {
-  id: string
-  year: number
-  model: string
-  trim?: string
-  generation?: number
-  os_grid_cell: string
-  description?: string
-  uses?: string[]
-  color?: string
-}
+import { Vehicle } from '../types';
 
 const PieChart: React.FC<{ data: Record<string, number>; size?: number; title?: string; palette: string[] }> = ({ data, size = 160, title, palette }) => {
   const total = Object.values(data).reduce((s, v) => s + v, 0)
