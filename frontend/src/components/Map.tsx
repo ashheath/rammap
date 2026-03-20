@@ -34,19 +34,21 @@ const parseCellKey = (cellKey: string) => {
   return { x, y }
 }
 
+const ordinalSuffix = (n: number) => {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return (s[(v - 20) % 10] || s[v] || s[0])
+}
+
 const formatCompactLabel = (v: Vehicle) => {
   const model = (v.model || '').replace(/^Ram\s+/i, '').trim()
   const trim = v.trim ? v.trim.trim() : ''
-  const generation = v.generation ? String(v.generation) : ''
-  let parts: string[] = []
+  const genNum = v.generation ? Number(v.generation) : undefined
+  const gen = genNum ? `${genNum}${ordinalSuffix(genNum)} Gen` : ''
+  const parts: string[] = []
   if (model) parts.push(model)
   if (trim) parts.push(trim)
-  // generation usually follows the trim, e.g. "Rebel 5th Gen"
-  if (generation && parts.length > 0) {
-    parts[parts.length - 1] = `${parts[parts.length - 1]} ${generation}`
-  } else if (generation) {
-    parts.push(generation)
-  }
+  if (gen) parts.push(gen)
   return parts.join(', ')
 }
 
@@ -306,12 +308,12 @@ const LeafletMap: React.FC<MapProps> = ({
 
         const usesText = (vehicle.uses || []).map((u) => u).join(', ')
         const desc = vehicle.description ? `<div style="margin-top:6px;color:#666">${vehicle.description}</div>` : ''
-        const vrmHtml = vehicle.vrm ? `<div style="margin-top:6px;font-size:12px;color:#666">VRM: ${vehicle.vrm}</div>` : ''
         const colorText = vehicle.color ? vehicle.color : 'N/A'
 
-        // Detailed popup when selected: compact label, year, color, uses, description, VRM
+        // Detailed popup when selected: compact label, year, color, uses, description
+        // NOTE: VRM is intentionally NOT shown to users for privacy
         marker.bindPopup(
-          `<div style="font-size:13px;max-width:260px;color:#111"><strong>${compact}</strong><div style="margin-top:6px;font-size:12px;color:#444">Year: ${vehicle.year} • Color: ${colorText}</div>${desc}<div style="margin-top:6px;font-size:12px;color:#888">Uses: ${usesText || 'N/A'}</div>${vrmHtml}</div>`
+          `<div style="font-size:13px;max-width:260px;color:#111"><strong>${compact}</strong><div style="margin-top:6px;font-size:12px;color:#444">Year: ${vehicle.year} • Color: ${colorText}</div>${desc}<div style="margin-top:6px;font-size:12px;color:#888">Uses: ${usesText || 'N/A'}</div></div>`
         )
         marker.on('click', () => onVehicleSelectedRef.current(vehicle))
         marker.on('popupclose', () => onVehicleSelectedRef.current(null))
