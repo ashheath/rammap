@@ -115,7 +115,7 @@ export const validateVehicleInput = (
   }
 
   // Optional color validation
-  const allowedColors = ['Black', 'Red', 'Green', 'Yellow', 'Grey', 'Other']
+  const allowedColors = ['Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other']
   if (req.body.color && !allowedColors.includes(req.body.color)) {
     errors.push('Invalid color option')
   }
