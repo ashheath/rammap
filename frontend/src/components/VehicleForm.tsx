@@ -103,7 +103,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
   }
 
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 30 }, (_, i) => currentYear - i)
+  const years = Array.from({ length: currentYear - 1920 + 1 }, (_, i) => currentYear - i)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-gray-900/90 rounded-lg border border-indigo-700 shadow-lg ring-1 ring-indigo-600/30 backdrop-blur-sm">
@@ -263,9 +263,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
             disabled={loading || !model}
           >
             <option value="">Select trim</option>
-            {(model === 'Ram 1500' ? ['Tradesman', 'Big Horn', 'Laramie', 'Rebel', 'Limited', 'TRX', 'Sport', 'Built to Serve'] :
-                model === 'Ram 2500' ? ['Tradesman', 'Laramie', 'Power Wagon', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
-                model === 'Ram 3500' ? ['Tradesman', 'Laramie', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
+            {(model === 'Ram 1500' ? ['Tradesman', 'SLT', 'Big Horn', 'Laramie', 'Rebel', 'Limited', 'TRX', 'Sport', 'Built to Serve'] :
+                model === 'Ram 2500' ? ['Tradesman', 'SLT', 'Laramie', 'Power Wagon', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
+                model === 'Ram 3500' ? ['Tradesman', 'SLT', 'Laramie', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
                 []).map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
