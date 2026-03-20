@@ -207,7 +207,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
           className="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           disabled={loading}
         >
-          {['Black', 'Red', 'Green', 'Yellow', 'Grey', 'Other'].map((c) => (
+          {['Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Other'].map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
@@ -263,9 +263,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
             disabled={loading || !model}
           >
             <option value="">Select trim</option>
-            {(model === 'Ram 1500' ? ['Tradesman', 'Big Horn', 'Laramie', 'Rebel', 'Limited', 'TRX'] :
-                model === 'Ram 2500' ? ['Tradesman', 'Laramie', 'Power Wagon', 'Limited', 'Rebel'] :
-                model === 'Ram 3500' ? ['Tradesman', 'Laramie', 'Limited', 'Rebel'] :
+            {(model === 'Ram 1500' ? ['Tradesman', 'Big Horn', 'Laramie', 'Rebel', 'Limited', 'TRX', 'Sport', 'Built to Serve'] :
+                model === 'Ram 2500' ? ['Tradesman', 'Laramie', 'Power Wagon', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
+                model === 'Ram 3500' ? ['Tradesman', 'Laramie', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
                 []).map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}

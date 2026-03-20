@@ -223,6 +223,7 @@ const LeafletMap: React.FC<MapProps> = ({
       // Map logical colour names to actual asset filenames (some assets use different casing/spelling)
       const mapping: Record<string, string> = {
         black: 'pickup-black.png',
+        blue: 'pickup-blue.png',
         red: 'pickup-red.png',
         green: 'pickup-green.png',
         yellow: 'pickup-yellow.png',
