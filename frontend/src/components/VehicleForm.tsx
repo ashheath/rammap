@@ -263,10 +263,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ gridCell, vehicle, onSubmit }
             disabled={loading || !model}
           >
             <option value="">Select trim</option>
-            {(model === 'Ram 1500' ? ['Tradesman', 'SLT', 'Big Horn', 'Laramie', 'Rebel', 'Limited', 'TRX', 'Sport', 'Built to Serve'] :
-                model === 'Ram 2500' ? ['Tradesman', 'SLT', 'Laramie', 'Power Wagon', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
-                model === 'Ram 3500' ? ['Tradesman', 'SLT', 'Laramie', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
-                []).map((t) => (
+            {(model === 'Ram 1500' ? ['Tradesman', 'SLT', 'Big Horn', 'Laramie', 'Longhorn', 'Rebel', 'Limited', 'TRX', 'Sport', 'Built to Serve'] :
+              model === 'Ram 2500' ? ['Tradesman', 'SLT', 'Laramie', 'Longhorn', 'Power Wagon', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
+              model === 'Ram 3500' ? ['Tradesman', 'SLT', 'Laramie', 'Longhorn', 'Limited', 'Rebel', 'Sport', 'Built to Serve'] :
+              []).map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
