@@ -98,7 +98,7 @@ function App() {
               }}
               className="flex-1 bg-blue-600 text-white py-1 px-2.5 rounded font-semibold text-sm"
             >
-              {showForm ? 'Close Form' : 'Add Vehicle'}
+              {showForm ? 'Hide Form' : 'Add Vehicle'}
             </button>
             <button
               onClick={() => {
@@ -152,18 +152,16 @@ function App() {
         </div>
 
         {/* Form Container */}
-        {showForm && (
-          <div className="p-4 md:border-b md:border-gray-700 flex-shrink-0 bg-gray-900">
-            <VehicleForm
-              gridCell={selectedCell}
-              vehicle={selectedVehicle}
-              onSubmit={() => {
-                setShowForm(false)
-                fetchAllVehicles()
-              }}
-            />
-          </div>
-        )}
+        <div className={`${showForm ? 'block' : 'hidden'} p-4 md:border-b md:border-gray-700 flex-shrink-0 bg-gray-900`}>
+          <VehicleForm
+            gridCell={selectedCell}
+            vehicle={selectedVehicle}
+            onSubmit={() => {
+              setShowForm(false)
+              fetchAllVehicles()
+            }}
+          />
+        </div>
 
         {showStats && (
           <div className="p-4 md:border-b md:border-gray-700 flex-shrink-0 bg-gray-900">
