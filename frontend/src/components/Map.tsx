@@ -224,7 +224,7 @@ const LeafletMap: React.FC<MapProps> = ({
       const mapping: Record<string, string> = {
         black: 'pickup-black.png',
         blue: 'pickup-blue.png',
-        white: 'pickup-white.svg',
+        white: 'pickup-white.png',
         red: 'pickup-red.png',
         green: 'pickup-green.png',
         yellow: 'pickup-yellow.png',
